@@ -1,0 +1,220 @@
+Index: src/main/java/jm/task/core/jdbc/model/User.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>package jm.task.core.jdbc.model;\r\n\r\nimport javax.persistence.Column;\r\nimport javax.persistence.Id;\r\nimport javax.persistence.Table;\r\n\r\n@Table\r\npublic class User {\r\n    @Id\r\n    private Long id;\r\n\r\n    @Column\r\n    private String name;\r\n\r\n    @Column\r\n    private String lastName;\r\n\r\n    @Column\r\n    private Byte age;\r\n\r\n    public User() {\r\n\r\n    }\r\n\r\n    public User(String name, String lastName, Byte age) {\r\n        this.name = name;\r\n        this.lastName = lastName;\r\n        this.age = age;\r\n    }\r\n\r\n    public Long getId() {\r\n        return id;\r\n    }\r\n\r\n    public void setId(Long id) {\r\n        this.id = id;\r\n    }\r\n\r\n    public String getName() {\r\n        return name;\r\n    }\r\n\r\n    public void setName(String name) {\r\n        this.name = name;\r\n    }\r\n\r\n    public String getLastName() {\r\n        return lastName;\r\n    }\r\n\r\n    public void setLastName(String lastName) {\r\n        this.lastName = lastName;\r\n    }\r\n\r\n    public Byte getAge() {\r\n        return age;\r\n    }\r\n\r\n    public void setAge(Byte age) {\r\n        this.age = age;\r\n    }\r\n}\r\n
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/src/main/java/jm/task/core/jdbc/model/User.java b/src/main/java/jm/task/core/jdbc/model/User.java
+--- a/src/main/java/jm/task/core/jdbc/model/User.java	
++++ b/src/main/java/jm/task/core/jdbc/model/User.java	
+@@ -59,4 +59,14 @@
+     public void setAge(Byte age) {
+         this.age = age;
+     }
++
++    @Override
++    public String toString() {
++        return "User{" +
++                "id=" + id +
++                ", name='" + name + '\'' +
++                ", lastName='" + lastName + '\'' +
++                ", age=" + age +
++                '}';
++    }
+ }
+Index: src/main/java/jm/task/core/jdbc/util/Util.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>package jm.task.core.jdbc.util;\r\n\r\npublic class Util {\r\n    // реализуйте настройку соеденения с БД\r\n}\r\n
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/src/main/java/jm/task/core/jdbc/util/Util.java b/src/main/java/jm/task/core/jdbc/util/Util.java
+--- a/src/main/java/jm/task/core/jdbc/util/Util.java	
++++ b/src/main/java/jm/task/core/jdbc/util/Util.java	
+@@ -1,5 +1,31 @@
+ package jm.task.core.jdbc.util;
+ 
++import java.sql.Connection;
++import java.sql.DriverManager;
++import java.sql.SQLException;
++
+ public class Util {
++
++    private static final String DB_Driver = "com.mysql.cj.jdbc.Driver";
++    private static final String DB_URL = "jdbc:mysql://localhost:3306/myDB";
++    private static final String DB_USER = "root";
++    private static final String DB_PASSWORD = "1234";
++
++
++    public static Connection getConnection() {
++        Connection conn = null;
++        try  {
++            Class.forName(DB_Driver);
++            conn = DriverManager.getConnection(DB_URL,DB_USER,DB_PASSWORD);
++            System.out.println("Connected to database");
++        } catch (ClassNotFoundException | SQLException e) {
++            System.out.println("Failed to connect to database");
++            throw new RuntimeException(e);
++
++        }
++        return conn;
++    }
++
++
+     // реализуйте настройку соеденения с БД
+ }
+Index: src/main/java/jm/task/core/jdbc/service/UserServiceImpl.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>package jm.task.core.jdbc.service;\r\n\r\nimport jm.task.core.jdbc.model.User;\r\n\r\nimport java.util.List;\r\n\r\npublic class UserServiceImpl implements UserService {\r\n    public void createUsersTable() {\r\n\r\n    }\r\n\r\n    public void dropUsersTable() {\r\n\r\n    }\r\n\r\n    public void saveUser(String name, String lastName, byte age) {\r\n\r\n    }\r\n\r\n    public void removeUserById(long id) {\r\n\r\n    }\r\n\r\n    public List<User> getAllUsers() {\r\n        return null;\r\n    }\r\n\r\n    public void cleanUsersTable() {\r\n\r\n    }\r\n}\r\n
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/src/main/java/jm/task/core/jdbc/service/UserServiceImpl.java b/src/main/java/jm/task/core/jdbc/service/UserServiceImpl.java
+--- a/src/main/java/jm/task/core/jdbc/service/UserServiceImpl.java	
++++ b/src/main/java/jm/task/core/jdbc/service/UserServiceImpl.java	
+@@ -1,31 +1,106 @@
+ package jm.task.core.jdbc.service;
+ 
+ import jm.task.core.jdbc.model.User;
++import jm.task.core.jdbc.util.Util;
+ 
++import java.sql.*;
++import java.util.ArrayList;
+ import java.util.List;
+ 
+-public class UserServiceImpl implements UserService {
++public class UserServiceImpl extends Util implements UserService {
++    Connection conn = Util.getConnection();
++
+     public void createUsersTable() {
++        Statement stmt = null;
++
++
++        try {
++            stmt = conn.createStatement();
++            String sql = "CREATE TABLE IF NOT EXISTS users " +
++                    "(id INT PRIMARY KEY AUTO_INCREMENT, " +
++                    "name VARCHAR(30), " +
++                    "lastName VARCHAR(30), " +
++                    "age INT)";
++
++            stmt.executeUpdate(sql);
++            System.out.println("Table successfully created...");
++        } catch (SQLException e) {
++            throw new RuntimeException(e);
++        }
+ 
+     }
+ 
+     public void dropUsersTable() {
++        Statement stmt = null;
+ 
++        try {
++            stmt = conn.createStatement();
++            String sql = "DROP TABLE IF EXISTS users";
++            stmt.executeUpdate(sql);
++            System.out.println("Table  dropped successfully...");
++        } catch (SQLException e) {
++            throw new RuntimeException(e);
++        }
+     }
+ 
+     public void saveUser(String name, String lastName, byte age) {
++        PreparedStatement preparedStatement = null;
++
++        try {
++            preparedStatement = conn.prepareStatement("INSERT INTO users(name,lastName,age)  VALUES (?, ?, ?)");
++            preparedStatement.setString(1, name);
++            preparedStatement.setString(2, lastName);
++            preparedStatement.setByte(3, age);
++            preparedStatement.executeUpdate();
++
++            System.out.println("Users by Id saved successfully...");
++        } catch (SQLException e) {
++            throw new RuntimeException(e);
++        }
+ 
+     }
+ 
+     public void removeUserById(long id) {
++        PreparedStatement stmt = null;
++        try {
++            stmt = conn.prepareStatement("DELETE FROM users WHERE id = ?");
++            stmt.setLong(1, id);
++            stmt.executeUpdate();
++            System.out.println("Users by Id removed successfully...");
++        } catch (SQLException e) {
++            throw new RuntimeException(e);
++        }
+ 
+     }
+ 
+     public List<User> getAllUsers() {
+-        return null;
++        List<User> users = new ArrayList<>();
++        Statement stmt = null;
++
++        try {
++            Statement statement = conn.createStatement();
++            statement.executeQuery("SELECT * FROM users");
++            ResultSet resultSet = statement.getResultSet();
++            while (resultSet.next()) {
++                User user = new User();
++                user.setId(resultSet.getLong("id"));
++                user.setName(resultSet.getString("name"));
++                user.setLastName(resultSet.getString("lastName"));
++                user.setAge((byte) resultSet.getInt("age"));
++                users.add(user);
++
++            }
++        } catch (SQLException e) {
++            throw new RuntimeException(e);
++        }
++
++
++        return users;
+     }
+ 
+     public void cleanUsersTable() {
+ 
+     }
++
++
+ }
+Index: src/main/java/jm/task/core/jdbc/Main.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>package jm.task.core.jdbc;\r\n\r\npublic class Main {\r\n    public static void main(String[] args) {\r\n        // реализуйте алгоритм здесь\r\n    }\r\n}\r\n
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/src/main/java/jm/task/core/jdbc/Main.java b/src/main/java/jm/task/core/jdbc/Main.java
+--- a/src/main/java/jm/task/core/jdbc/Main.java	
++++ b/src/main/java/jm/task/core/jdbc/Main.java	
+@@ -1,7 +1,22 @@
+ package jm.task.core.jdbc;
+ 
++import jm.task.core.jdbc.service.UserServiceImpl;
++import jm.task.core.jdbc.util.Util;
++
++import java.sql.SQLException;
++
+ public class Main {
+-    public static void main(String[] args) {
++    public static void main(String[] args) throws SQLException {
++
++        UserServiceImpl userService = new UserServiceImpl();
++        userService.createUsersTable();
++        userService.saveUser("Nick", "dshd", (byte) 54);
++        userService.saveUser("Roi", "QWE", (byte) 23);
++        userService.saveUser("ADG", "xvgh", (byte) 12);
++        //    userService.removeUserById(6);
++        userService.getAllUsers().forEach(System.out::println);
++        //      userService.dropUsersTable();
++        Util.getConnection().close();
+         // реализуйте алгоритм здесь
+     }
+ }
