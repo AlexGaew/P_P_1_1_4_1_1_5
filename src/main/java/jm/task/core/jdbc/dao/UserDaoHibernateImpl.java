@@ -1,6 +1,7 @@
 package jm.task.core.jdbc.dao;
 
 import jm.task.core.jdbc.model.User;
+import org.hibernate.HibernateException;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 
@@ -27,6 +28,8 @@ public class UserDaoHibernateImpl implements UserDao {
                     "  PRIMARY KEY (id))";
             session.createSQLQuery(sql).executeUpdate();
             log.info("Created users table");
+        } catch (HibernateException e) {
+            log.log(Level.SEVERE, "Error creating users table", e);
         }
     }
 
@@ -38,6 +41,8 @@ public class UserDaoHibernateImpl implements UserDao {
             String sql = "DROP TABLE IF EXISTS users";
             session.createSQLQuery(sql).executeUpdate();
             log.info("DROP TABLE IF EXISTS users");
+        } catch (HibernateException e) {
+            log.log(Level.SEVERE, "Error dropping users table", e);
         }
     }
 
@@ -48,6 +53,8 @@ public class UserDaoHibernateImpl implements UserDao {
             session.save(new User(name, lastName, age));
             log.log(Level.INFO, "User a: {0} added to table ", new Object[]{name});
             session.getTransaction().commit();
+        } catch (HibernateException e) {
+            log.log(Level.SEVERE, "Error saving user", e);
         }
     }
 
@@ -57,17 +64,24 @@ public class UserDaoHibernateImpl implements UserDao {
             session.beginTransaction();
             session.createQuery("delete User where id = :id").setParameter("id", id).executeUpdate();
             session.getTransaction().commit();
+        } catch (HibernateException e) {
+            log.log(Level.SEVERE, "Error removing user", e);
         }
     }
 
     @Override
     public List<User> getAllUsers() {
+        List<User> users = null;
         try (Session session = sessionFactory.openSession()) {
             session.beginTransaction();
-            List<User> users = session.createQuery("from User").getResultList();
+            users = session.createQuery("from User").getResultList();
             session.getTransaction().commit();
-            return users;
+
+        } catch (HibernateException e) {
+            log.log(Level.SEVERE, "Error getting all users", e);
         }
+        log.info("all users are taken from the table successfully...");
+        return users;
     }
 
     @Override
@@ -76,7 +90,8 @@ public class UserDaoHibernateImpl implements UserDao {
             session.beginTransaction();
             session.createQuery("delete User").executeUpdate();
             session.getTransaction().commit();
+        } catch (HibernateException e) {
+            log.log(Level.SEVERE, "Error cleaning users table", e);
         }
-
     }
 }

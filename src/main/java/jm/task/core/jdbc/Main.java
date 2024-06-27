@@ -6,21 +6,21 @@ import java.sql.SQLException;
 
 public class Main {
     public static void main(String[] args) throws SQLException {
-        UserServiceImpl userService = new UserServiceImpl();
+        //UserServiceImpl userService = new UserServiceImpl();
         UserDaoHibernateImpl userDao = new UserDaoHibernateImpl();
         // create Table
-        userService.createUsersTable();
+      //  userService.createUsersTable();
         // add 4 users
-        userService.saveUser("Nick", "Poprys", (byte) 54);
-        userService.saveUser("Roi", "Bolur", (byte) 23);
-        userService.saveUser("Pol", "Hardiskon", (byte) 34);
-        userService.saveUser("Jon", "Wey", (byte) 22);
+//        userService.saveUser("Nick", "Poprys", (byte) 54);
+//        userService.saveUser("Roi", "Bolur", (byte) 23);
+//        userService.saveUser("Pol", "Hardiskon", (byte) 34);
+//        userService.saveUser("Jon", "Wey", (byte) 22);
         // print to console all users
-        userService.getAllUsers().forEach(System.out::println);
+   //     userService.getAllUsers().forEach(System.out::println);
         // clear table
-        userService.cleanUsersTable();
+    //    userService.cleanUsersTable();
         // delete table
-        userService.dropUsersTable();
+    //    userService.dropUsersTable();
 
         userDao.createUsersTable();
 

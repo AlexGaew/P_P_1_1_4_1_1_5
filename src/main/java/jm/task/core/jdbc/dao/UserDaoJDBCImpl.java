@@ -13,58 +13,60 @@ public class UserDaoJDBCImpl implements UserDao {
     Logger log = Logger.getLogger("UserDaoJDBCImpl");
 
 
-    public void createUsersTable() throws SQLException {
-        try (Statement stmt = conn.createStatement()) {
-            String sql = "CREATE TABLE IF NOT EXISTS users " +
-                    "(id INT PRIMARY KEY AUTO_INCREMENT, " +
-                    "name VARCHAR(30), " +
-                    "lastName VARCHAR(30), " +
-                    "age INT)";
-
-            stmt.executeUpdate(sql);
+    public void createUsersTable() {
+        String sql = "CREATE TABLE IF NOT EXISTS users " +
+                "(id INT PRIMARY KEY AUTO_INCREMENT, " +
+                "name VARCHAR(30), " +
+                "lastName VARCHAR(30), " +
+                "age INT)";
+        try (PreparedStatement preparedStatement = conn.prepareStatement(sql)) {
+            preparedStatement.executeUpdate();
             log.info("Table successfully created...");
+        } catch (SQLException e) {
+            log.log(Level.SEVERE, "Error creating table", e);
         }
     }
 
-    public void dropUsersTable() throws SQLException {
-
-        try (Statement stmt = conn.createStatement()) {
-            String sql = "DROP TABLE IF EXISTS users";
-            stmt.executeUpdate(sql);
+    public void dropUsersTable() {
+        try (PreparedStatement preparedStatement = conn.prepareStatement("DROP TABLE IF EXISTS users")) {
+            preparedStatement.executeUpdate();
             log.info("Table  dropped successfully...");
+        } catch (SQLException e) {
+            log.log(Level.SEVERE, "Error creating table", e);
         }
 
     }
 
-    public void saveUser(String name, String lastName, byte age) throws SQLException {
-
+    public void saveUser(String name, String lastName, byte age) {
         try (PreparedStatement preparedStatement = conn.prepareStatement("INSERT INTO users(name,lastName,age)  VALUES (?, ?, ?)")) {
             preparedStatement.setString(1, name);
             log.log(Level.INFO, "User a: {0} added to table ", new Object[]{name});
-
             preparedStatement.setString(2, lastName);
             preparedStatement.setByte(3, age);
             preparedStatement.executeUpdate();
+        } catch (SQLException e) {
+            log.log(Level.SEVERE, e.getMessage(), e);
         }
 
     }
 
-    public void removeUserById(long id) throws SQLException {
+    public void removeUserById(long id) {
         try (PreparedStatement preparedStatement = conn.prepareStatement("DELETE FROM users WHERE id = ?")) {
             preparedStatement.setLong(1, id);
             preparedStatement.executeUpdate();
-            log.info("Users by Id removed successfully...");
+            log.log(Level.INFO, "User removed from table : {0}", new Object[]{id});
+        } catch (SQLException e) {
+            log.log(Level.SEVERE, e.getMessage(), e);
         }
 
     }
 
-    public List<User> getAllUsers() throws SQLException {
+    public List<User> getAllUsers() {
         List<User> users = new ArrayList<>();
 
-        try (Statement stmt = conn.createStatement()) {
-            stmt.executeQuery("SELECT * " +
-                    " FROM users");
-            ResultSet resultSet = stmt.getResultSet();
+        try (PreparedStatement preparedStatement = conn.prepareStatement("SELECT * FROM users")) {
+            preparedStatement.executeQuery();
+            ResultSet resultSet = preparedStatement.getResultSet();
             while (resultSet.next()) {
                 User user = new User();
                 user.setId(resultSet.getLong("id"));
@@ -73,15 +75,18 @@ public class UserDaoJDBCImpl implements UserDao {
                 user.setAge((byte) resultSet.getInt("age"));
                 users.add(user);
             }
+        } catch (SQLException e) {
+            log.log(Level.SEVERE, e.getMessage(), e);
         }
-
         return users;
     }
 
-    public void cleanUsersTable() throws SQLException {
-        try (PreparedStatement stmt = conn.prepareStatement("TRUNCATE TABLE users")) {
-            stmt.executeUpdate();
+    public void cleanUsersTable() {
+        try (PreparedStatement preparedStatement = conn.prepareStatement("TRUNCATE TABLE users")) {
+            preparedStatement.executeUpdate();
             log.info("Table  cleaner successfully...");
+        } catch (SQLException e) {
+            log.log(Level.SEVERE, e.getMessage(), e);
         }
     }
 }
